@@ -1,0 +1,32 @@
+============================================================
+TASK 5 — Extended mesh convergence at omega = 1.0 rad/s
+============================================================
+
+  panels        A [kg]     B [N*s/m]  dA_fine%  dB_fine%
+  ----------------------------------------------------
+      72      406589.9      114857.8      9.44     61.44
+     168      429777.8       92387.8      4.28     29.85
+     672      445761.2       74076.0      0.72      4.12
+    1152      448987.4       71147.4      0.00      0.00
+
+Richardson extrapolation (672 vs 1152 panels, p=1 assumed):
+  A_extrapolated = 459417.6 kg
+  B_extrapolated = 61679.2 N*s/m
+
+Estimated true error (relative to Richardson extrapolant):
+  672-panel mesh:  A error ~ 3.0%, B error ~ 20.1%
+  1152-panel mesh: A error ~ 2.3%, B error ~ 15.4%
+
+IMPORTANT DISTINCTION:
+  'dA_fine%' and 'dB_fine%' are differences relative to the finest
+  TESTED mesh (1152 panels), NOT absolute convergence errors.
+  Richardson extrapolation estimates the true error is larger.
+
+CONCLUSIONS:
+  - The 672-panel mesh is NOT fully converged.
+    Estimated true errors: A ~ 3%, B ~ 20% at omega = 1.0 rad/s.
+  - Radiation damping converges much more slowly than added mass.
+  - Further refinement (>1152 panels) is recommended before
+    production deployment of the Cummins equation.
+  - For the current development/testing phase, 672 panels is
+    acceptable with the above caveats documented.

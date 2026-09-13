@@ -1,0 +1,21 @@
+============================================================
+TASK 3 — Irregular frequency audit
+============================================================
+
+Capytaine uses a parallelepiped formula for the estimate.
+For this cylinder (r=5 m, draft=10 m) the estimate is
+independent of mesh resolution (geometry-based, not mesh-based).
+
+   Resolution (panels)     omega_irr         T_irr    % of irr
+        (2, 8, 5) (72)        2.0880        3.0092        67.1
+      (3, 12, 8) (168)        2.0880        3.0092        67.1
+     (6, 24, 16) (672)        2.0880        3.0092        67.1
+
+Production omega_max = 1.4 rad/s
+  = 67.1% of omega_irr = 2.0880 rad/s
+  Safety margin: 32.9% below omega_irr
+
+CONCLUSION:
+  omega_max = 1.4 rad/s is safely below the irregular frequency.
+  The 33% safety margin is adequate for the production frequency range.
+  Do NOT extend omega_max without adding a lid mesh.

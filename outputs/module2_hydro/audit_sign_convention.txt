@@ -1,0 +1,31 @@
+============================================================
+TASK 1 — Radiation-damping sign convention audit
+============================================================
+
+Capytaine 3.x computes:
+  A_cap = Re(F_rad) / omega^2
+  B_cap = Im(F_rad) / omega
+
+Standard decomposition (Falnes 2002, §5.2):
+  F_rad = omega^2 * A - i * omega * B_physical
+  => Im(F_rad) = -omega * B_physical
+  => B_cap = -B_physical
+  => B_physical = -B_cap  (positive for energy dissipation)
+
+Capytaine RAO transfer function (source-verified):
+  H = -omega^2*(M+A) - i*omega*B_cap + C
+  Im(-i*omega*B_cap) = -omega*B_cap = +omega*B_physical > 0  (passive)
+
+Empirical verification at three frequencies:
+
+   omega     Re(F_rad)     Im(F_rad)         A_cap         B_cap    B_physical
+  --------------------------------------------------------------------------
+     0.5       86081.8       -4159.0      344327.3       -8318.1        8318.1
+     1.0      445761.1      -74076.1      445761.1      -74076.1       74076.1
+     1.2      807233.0     -132562.1      560578.5     -110468.4      110468.4
+
+CONCLUSION:
+  B_cap < 0 at all tested frequencies.
+  B_physical = -B_cap > 0 (correct: positive for passive dissipation).
+  Our code's negation  B_physical = -B_capytaine  is CORRECT.
+  No code change required.

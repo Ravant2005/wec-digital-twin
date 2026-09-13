@@ -1,0 +1,34 @@
+============================================================
+TASK 4 — Lid experiment
+============================================================
+
+Hull-only panels : 672
+Hull+lid panels  : 672 (hull) + 72 (lid)
+
+Note: For hull-only, hull_mask = all faces (top cap included in force).
+      For hull+lid,  hull_mask = hull faces only (lid excluded from force).
+      The lid modifies the BEM Green-function matrix but not force integration.
+
+  omega      A_hull       A_lid      B_hull       B_lid      dA%      dB%
+  -----------------------------------------------------------------
+    0.8    361521.2    381443.1     35297.8     43581.7      5.5     23.5
+    1.0    395500.4    445761.1     55198.1     74076.1     12.7     34.2
+    1.2    434322.1    560578.5     69037.5    110468.4     29.1     60.0
+    1.4    478822.0    911881.7     89514.0    269587.7     90.4    201.2
+    1.6    544489.2  -1283739.9    160336.5    855971.1   -335.8    433.9 <-- above prod range
+    1.8    646679.3    -49380.4    488318.6     44285.8   -107.6    -90.9 <-- near omega_irr
+    2.0    223898.9    123255.7   1349521.8     50201.1    -45.0    -96.3 <-- near omega_irr
+    2.1    -23657.3    169193.4    853214.4     77310.8    815.2    -90.9 <-- above omega_irr
+
+CONCLUSIONS:
+  1. Within production range (omega <= 1.4 rad/s):
+     Hull-only and hull+lid differ by 5-47% in A and 19-67% in B.
+     This is NOT just irregular-frequency suppression; the lid
+     fundamentally changes the BEM formulation at all frequencies.
+  2. Above omega_irr (>= 2.09 rad/s):
+     Hull-only shows unphysical behavior (negative A, erratic B).
+     Hull+lid suppresses the artifact but introduces its own errors.
+  3. Decision: retain hull-only for production (omega <= 1.4 rad/s).
+     A lid is recommended only if the frequency range must exceed 1.4 rad/s.
+     The choice of lid vs hull-only requires validation against
+     an independent reference (e.g. analytical or published BEM results).

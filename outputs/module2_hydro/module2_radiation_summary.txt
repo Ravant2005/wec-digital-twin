@@ -1,0 +1,63 @@
+=================================================================
+Module 2.3A — Radiation Memory Model Summary
+=================================================================
+
+IMPORTANT: TEMPORARY DEVELOPMENT BUOY — not the Goa deployment buoy.
+
+1. BEM input (Module 2.2, FROZEN)
+   Capytaine version : 3.0.0
+   Mesh resolution   : (6, 24, 16) = 672 panels
+   Frequency range   : 0.20–1.40 rad/s (20 points)
+   omega_irr estimate: 2.0880 rad/s
+   omega_max/omega_irr: 67.0%
+
+2. Transform convention
+   K(t) = (2/pi) * integral_0^{omega_max} B_tapered(omega) cos(omega*t) domega
+   B(omega) = integral_0^inf K(t) cos(omega*t) dt  [Ogilvie 1964]
+   A(omega) - A_inf = -(1/omega) * integral_0^inf K(t) sin(omega*t) dt
+
+3. Kernel parameters
+   t_max          = 60.0 s
+   dt             = 0.05 s
+   n_time         = 1201
+   n_interp       = 2000
+   taper_fraction = 0.15
+   K(0)           = 33736.8 N·s/m
+
+4. A_infinity estimates
+   Endpoint A(omega_max)  = 911881.1 kg  [lower bound]
+   Trend fit (1/omega^2)  = 1130630.8 kg  [unreliable]
+   Ogilvie mid-range      = 335498.2 kg  [SELECTED]
+
+   LIMITATION: omega_max = 1.4 rad/s is only 67% of omega_irr.
+   A(omega) has NOT reached its high-frequency asymptote.
+   A_inf cannot be reliably determined from this frequency range.
+   The Ogilvie estimate is self-consistent with the kernel but
+   is still affected by the truncation of B(omega) at omega_max.
+
+5. Reconstruction quality
+   Trusted range: 0.453–1.147 rad/s
+   B RMSE (trusted)   = 0.97%
+   B max rel (trusted)= 2.68%
+   A RMSE (trusted)   = 17.46%
+   A max rel (trusted)= 36.55%
+
+   B reconstruction is the primary quality metric.
+   A reconstruction errors are dominated by A_inf uncertainty.
+
+6. Numerical limitations
+   - B(omega) is truncated at omega_max = 1.4 rad/s where it is
+     still rising steeply (near irregular frequency artifact).
+   - The cosine taper (15%) reduces Gibbs ringing but does not
+     eliminate the truncation error near omega_max.
+   - The reconstruction degrades rapidly for omega > 1.15 rad/s.
+   - A_inf is the dominant source of A reconstruction error.
+   - Mesh convergence: 672-panel mesh has ~20% B error (Module 2.2).
+     This propagates into K(t) and the reconstruction.
+
+7. Recommendations before Cummins deployment
+   - Extend frequency range to at least 3*omega_irr with a finer
+     mesh to obtain a reliable A_inf estimate.
+   - Refine mesh to reduce the ~20% B(omega) error (Module 2.2).
+   - Consider state-space approximation of K(t) for efficiency.
+=================================================================

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "dataset_name": "ERA5 Reanalysis \u2014 Single Levels",
+  "cds_dataset_id": "reanalysis-era5-single-levels",
+  "stream": "waves",
+  "project_location": {
+    "latitude_N": 15.45,
+    "longitude_E": 73.55,
+    "description": "Goa offshore WEC site"
+  },
+  "era5_wave_grid_resolution_deg": 0.5,
+  "requested_latitude": 15.5,
+  "requested_longitude": 73.5,
+  "actual_latitude_in_file": 15.5,
+  "actual_longitude_in_file": 73.5,
+  "variables_requested": [
+    "significant_height_of_combined_wind_waves_and_swell",
+    "mean_wave_period",
+    "mean_wave_direction",
+    "peak_wave_period"
+  ],
+  "year": 2019,
+  "month": 2,
+  "temporal_resolution": "hourly",
+  "data_format": "netcdf",
+  "source": "Copernicus Climate Data Store / ECMWF ERA5",
+  "download_timestamp_utc": "2026-09-10T10:04:03.912085+00:00",
+  "raw_file": "era5_waves_goa_2019-02.nc",
+  "immutable_note": "This raw file must not be modified. All processing must operate on copies."
+}

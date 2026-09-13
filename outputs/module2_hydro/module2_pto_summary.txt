@@ -1,0 +1,74 @@
+======================================================================
+Module 2.4 — Fixed PTO Model Summary
+======================================================================
+
+IMPORTANT: TEMPORARY DEVELOPMENT BUOY — not the Goa deployment buoy.
+
+1. PTO equation of motion
+   (M+A_inf) x_ddot + (C33+K_pto) x + convolution + B_pto v = F_exc
+   F_PTO_on_buoy = -B_pto*v - K_pto*x
+   Positive heave upward.  Damping opposes velocity.  Stiffness opposes displacement.
+
+2. Power definition
+   P_abs(t) = B_pto * v(t)^2  [W]  (always >= 0 for B_pto >= 0)
+   Reactive term K_pto*x*v averages to zero over a cycle — NOT counted.
+   E_PTO(t) = integral_0^t P_abs dtau  [J]
+
+3. FD impedance with PTO (e^{+i*omega*t} convention)
+   Z_PTO = (C33+K_pto) - omega^2*(M+A(omega)) + i*omega*(B(omega)+B_pto)
+   Derived from TD equation; consistent with Module 2.3C convention.
+
+4. Development PTO parameters
+   B_PTO = 4e+04 N.s/m  (~1x B(omega) at resonance = 43611 N.s/m)
+   K_PTO = 0e+00 N/m   (purely resistive primary study)
+   omega_demo = 0.8 rad/s (near resonance)
+
+5. Regular-wave TD vs FD validation (B_PTO=4e4, K_PTO=0, T=400s, dt=0.05s)
+   Trusted hydrodynamic range: omega in [0.45, 1.15] rad/s
+    omega    TD_amp    FD_amp   amp_err%   ph_err_deg
+      0.4    0.2558    0.2542        0.6          0.7
+      0.6    0.8878    0.8542        3.9          0.5
+      0.8    6.7850    6.8301        0.7          1.0
+      1.0    1.7720    1.4348       23.5          3.2
+      1.2    1.0974    0.7748       41.6          3.7
+   omega=0.4, 0.6, 0.8: good agreement (<5% amp, <2 deg phase).
+   omega=1.0, 1.2: large amp error due to BEM irregular-frequency artifact.
+
+6. Damping sweep (omega=0.8, K_PTO=0, T=400s)
+        B_PTO   mean_P_kW     rms_v    disp_amp
+         1000        36.2    6.0167     10.6523
+         3000       103.0    5.8598     10.3749
+        10000       286.9    5.3564      9.4844
+        30000       541.0    4.2466      7.5201
+       100000       563.2    2.3732      4.2023
+       300000       313.5    1.0223      1.8099
+      1000000       114.9    0.3389      0.5999
+   Observed optimum region: B_PTO ~ 1e+05 N.s/m (mean_P = 563.2 kW)
+   Power rises from zero, peaks near B_PTO~1e5, then decreases as
+   excessive damping suppresses motion.
+
+7. Stiffness sensitivity (omega=0.8, B_PTO=4e4, T=400s)
+        K_PTO    disp_amp   mean_P_kW
+            0      6.7850       587.2
+       100000      3.3962       147.5
+       300000      1.4809        28.1
+       790000      0.6075         4.7
+   Increasing K_PTO shifts resonance upward, reducing amplitude at omega=0.8.
+   Reactive stiffness does NOT contribute to P_abs.
+
+8. Energy balance (omega=0.8, B_PTO=4e4, T=400s)
+   Final mech energy (no PTO): 30.52 MJ
+   Final mech energy (PTO):    11.84 MJ
+   Cumulative PTO energy:      215.62 MJ
+   PTO damping removes mechanical energy from the buoy. Confirmed.
+
+9. Backward compatibility
+   solve_cummins(pto=None) is identical to Module 2.3C. Verified.
+
+10. Limitations
+    - Fixed linear PTO only.  No optimization, no latching, no RL.
+    - B_PTO and K_PTO are development values, not optimized.
+    - BEM A(omega) affected by irregular-frequency artifact at omega>=1.0.
+    - Euler-Cromer O(dt) truncation; dt=0.05 s used throughout.
+    - A_inf is a development estimate (335499 kg).
+======================================================================

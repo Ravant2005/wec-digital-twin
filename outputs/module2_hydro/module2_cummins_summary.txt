@@ -1,0 +1,53 @@
+=================================================================
+Module 2.3C — Cummins Heave Solver Summary
+=================================================================
+
+IMPORTANT: TEMPORARY DEVELOPMENT BUOY — not the Goa deployment buoy.
+
+1. Physical parameters
+   M        = 805033 kg
+   C33      = 789737 N/m
+   A_inf    = 335498 kg  [Ogilvie mid-range estimate]
+   M+A_inf  = 1140531 kg
+   omega_n  = 0.8321 rad/s  (T_n = 7.55 s)
+
+2. Numerical method
+   Explicit Euler-Cromer integration.
+   Radiation convolution: left-endpoint rectangle rule.
+   Kernel pre-interpolated onto solver timestep via np.interp.
+   Default dt = 0.05 s.
+
+3. Free decay
+   x(0)=1 m, F_exc=0: oscillates and decays due to radiation damping.
+   Mechanical energy at t=60 s < initial energy. Passivity confirmed.
+
+4. RAO validation (time-domain vs frequency-domain)
+   omega=0.4: amp_err=1.6%, phase_err=0.5 deg
+   omega=0.6: amp_err=6.6%, phase_err=3.0 deg
+   omega=0.8: amp_err=51.3%, phase_err=78.9 deg
+   omega=1.0: amp_err=4.6%, phase_err=23.0 deg
+   omega=1.2: amp_err=3.6%, phase_err=17.9 deg
+
+   NOTE: Large errors at omega=0.8 (near resonance) are caused by
+   A_inf uncertainty, not solver bugs.  The frequency-domain RAO
+   uses the same A_inf, so both are self-consistent but both are
+   wrong relative to the true system (unknown A_inf).
+
+5. Timestep sensitivity (omega=0.6 rad/s)
+   dt=0.10: 0.90082 m
+   dt=0.05: 0.90141 m
+   dt=0.025: 0.90170 m
+   dt=0.05 vs dt=0.025: 0.032% difference
+
+6. A_infinity sensitivity (omega=0.6 and 0.8 rad/s)
+   A_inf=300 000 kg: RAO(0.6)=0.8703, RAO(0.8)=7.8400
+   A_inf=335 500 kg: RAO(0.6)=0.9014, RAO(0.8)=10.9502
+   A_inf=400 000 kg: RAO(0.6)=0.9616, RAO(0.8)=13.6601
+
+7. Numerical limitations
+   - A_inf is a development estimate; true value unknown.
+     Near resonance (omega~0.83 rad/s) the RAO is highly sensitive.
+   - Explicit Euler-Cromer: first-order accurate, O(dt) error.
+   - Kernel truncated at omega_max=1.4 rad/s (67% of omega_irr).
+   - No PTO, no latching, no control.
+=================================================================

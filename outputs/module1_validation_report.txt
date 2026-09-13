@@ -1,0 +1,243 @@
+======================================================================
+MODULE 1 SCIENTIFIC VALIDATION REPORT
+WEC Digital Twin — Ocean Environment
+======================================================================
+
+Chain validated:
+  ERA5 -> sea-state parameters -> JONSWAP -> directional spreading
+  -> finite-depth dispersion -> spatial wave synthesis -> Goa replay
+
+Conventions (LOCKED):
+  x=East, y=North
+  theta=0->North, theta=pi/2->East, clockwise positive
+  k_vector = k [sin(theta), cos(theta)]
+  spatial phase = -k(x*sin(theta) + y*cos(theta))
+  ERA5 mwd = propagation TOWARD direction, NO pi offset
+  gamma=3.3 is conventional JONSWAP default, NOT Goa-calibrated
+  depth_m is an explicit input, NOT hard-coded
+
+=== 1. SPECTRAL VALIDATION ===
+Frequency grid: f in [0.01, 2.0] Hz, N=2000, df=0.00100 Hz
+Tp error is induced by frequency-grid discretization: fp = 1/Tp is rounded to the nearest grid point.
+   Hs    Tp       df   fp_tgt  fp_grid  Tp_grid  Tp_err%  Tp_exp%   Hs_spec  Hs_err%
+ 0.50   6.0  0.00100  0.16667  0.16629   6.0135   0.2246   0.2995  0.499985   0.0030
+ 1.00  10.0  0.00100  0.10000  0.09959  10.0407   0.4069   0.5002  0.999996   0.0004
+ 1.50  14.0  0.00100  0.07143  0.07172  13.9429   0.4075   0.7017  1.499998   0.0001
+Max spectral Hs relative error: 0.0030%  (tolerance: <0.1%)
+Max spectral Tp relative error: 0.4075%  (worst-case grid-induced bound: 0.7017%)
+Measured Tp errors are within the expected grid-discretization bound.
+
+=== 2. JONSWAP / PM VALIDATION ===
+gamma=1 max |S_J - S_PM|: 0.00e+00  (must be 0.0 exactly)
+m0_PM                   : 0.062500 m²
+m0_JONSWAP_raw (gamma=3.3): 0.095309 m²  (before normalization)
+m0_JONSWAP_normalized    : 0.062500 m²  (after normalization)
+Hs_PM    = 0.999996 m  (target 1.0 m)
+Hs_J33   = 0.999996 m  (target 1.0 m)
+Raw enhancement ratio m0_raw/m0_PM = 1.5250
+
+=== 3. DIRECTIONAL ENERGY VALIDATION (circular statistics) ===
+ Dir_req      w_sum    circ_mean   diff_deg
+     0.0   1.00e+00     360.0000     0.0000
+    45.0   1.00e+00      45.0000     0.0000
+    90.0   1.00e+00      90.0000     0.0000
+   180.0   1.00e+00     180.0000     0.0000
+   225.0   1.00e+00     225.0000     0.0000
+   270.0   1.00e+00     270.0000     0.0000
+   315.0   1.00e+00     315.0000     0.0000
+Max |sum(w)-1|: 0.00e+00
+Max circular mean error: 0.0000 deg
+
+=== 4. DIRECTION DEGREE/RADIAN SAFETY ===
+    0 deg -> 0.000000 rad  (expected 0.000000)  err=0.00e+00  in[0,2pi)=True
+   90 deg -> 1.570796 rad  (expected 1.570796)  err=0.00e+00  in[0,2pi)=True
+  180 deg -> 3.141593 rad  (expected 3.141593)  err=0.00e+00  in[0,2pi)=True
+  270 deg -> 4.712389 rad  (expected 4.712389)  err=0.00e+00  in[0,2pi)=True
+API contract: direction_deg is converted ONCE via np.deg2rad().
+Passing 270 (degrees) as radians would give ~15.7 rad, outside [0,2pi).
+
+=== 5. DISPERSION VALIDATION ===
+  depth=   5.0 m  max|R|/omega^2 = 2.57e-12
+  depth=  20.0 m  max|R|/omega^2 = 2.34e-12
+  depth=  50.0 m  max|R|/omega^2 = 4.02e-12
+  depth= 200.0 m  max|R|/omega^2 = 1.84e-11
+
+Deep-water limit (f=0.1Hz, d=200m):
+  k_finite=0.040243, k_deep=omega^2/g=0.040243, rel_err=2.04e-07
+
+Shallow-water limit (f=0.05Hz, d=0.5m):
+  c=2.2129 m/s, sqrt(gd)=2.2147 m/s, rel_err=8.38e-04
+  Cg=2.2092 m/s, rel_err vs sqrt(gd)=2.51e-03
+  Cg/c = 0.9983  (should be ~1.0 in shallow water)
+
+Max dispersion residual |R|/omega^2 across all depths: 1.84e-11
+
+=== 6. SPATIAL PROPAGATION VALIDATION ===
+  f0=0.1 Hz, depth=50.0 m, k=0.041528 rad/m, c_theory=15.1298 m/s
+
+  Part A — Analytical crest test (exact formula):
+    North (0 deg): crest_err=0.00e+00  perp_phase_diff=0.00e+00
+    East  (90 deg): crest_err=0.00e+00  perp_phase_diff=1.27e-16
+    South (180 deg): crest_err=0.00e+00  perp_phase_diff=2.54e-16
+    West  (270 deg): crest_err=0.00e+00  perp_phase_diff=3.81e-16
+
+  Part B — Numerical propagation-speed test (crest-fitting):
+         Direction   c_theory   c_measured    rel_err
+     North (0 deg): c_theory=   15.1298  c_measured=     15.1298  rel_err=1.17e-16
+    East  (90 deg): c_theory=   15.1298  c_measured=     15.1298  rel_err=1.17e-16
+   South (180 deg): c_theory=   15.1298  c_measured=     15.1298  rel_err=1.17e-16
+   West  (270 deg): c_theory=   15.1298  c_measured=     15.1298  rel_err=1.17e-16
+
+  Max analytical crest-tracking error: 0.00e+00
+  Max numerical propagation-speed error: 1.17e-16
+  Note: numerical speed error is dominated by spatial grid resolution (window half-width=60.52 m, lambda=151.30 m, ds=0.2421 m).
+
+=== 7. SPATIAL ENERGY CONSERVATION ===
+  Hs=0.5 Tp=6 n_dir= 8: spectral_var=0.015388 synthesis_var=0.015388 rel_err=0.00e+00
+  Hs=0.5 Tp=6 n_dir=16: spectral_var=0.015388 synthesis_var=0.015388 rel_err=1.13e-16
+  Hs=0.5 Tp=6 n_dir=32: spectral_var=0.015388 synthesis_var=0.015388 rel_err=1.13e-16
+  Hs=1.0 Tp=10 n_dir= 8: spectral_var=0.062376 synthesis_var=0.062376 rel_err=1.11e-16
+  Hs=1.0 Tp=10 n_dir=16: spectral_var=0.062376 synthesis_var=0.062376 rel_err=1.11e-16
+  Hs=1.0 Tp=10 n_dir=32: spectral_var=0.062376 synthesis_var=0.062376 rel_err=1.11e-16
+  Hs=1.5 Tp=14 n_dir= 8: spectral_var=0.140553 synthesis_var=0.140553 rel_err=1.97e-16
+  Hs=1.5 Tp=14 n_dir=16: spectral_var=0.140553 synthesis_var=0.140553 rel_err=0.00e+00
+  Hs=1.5 Tp=14 n_dir=32: spectral_var=0.140553 synthesis_var=0.140553 rel_err=1.97e-16
+Max spatial energy conservation error: 1.97e-16
+
+=== 8. RANDOM-REALIZATION STATISTICS ===
+  dur=   300s: mean=0.9884 std=0.0272 min=0.9437 max=1.0817 median=0.9828 (target=1.000, spectral=0.9990)
+  dur=   600s: mean=0.9952 std=0.0189 min=0.9625 max=1.0481 median=0.9902 (target=1.000, spectral=0.9990)
+  dur=  1800s: mean=0.9981 std=0.0061 min=0.9831 max=1.0080 median=0.9984 (target=1.000, spectral=0.9990)
+  dur=  3600s: mean=0.9983 std=0.0041 min=0.9885 max=1.0058 median=0.9981 (target=1.000, spectral=0.9990)
+Note: Hs_spectral = 0.999000 m (target 1.0 m)
+Convergence: std(Hs_est) decreases with duration as expected.
+
+=== 9. ERA5 REPLAY VALIDATION ===
+  ERA5 records loaded: 744
+  NaN in Hs: 0
+  NaN in Tp: 0
+  NaN in dir: 0
+
+  Segments processed: 6
+    i    Hs_in   Hs_spec   Hs_err%   Tp_in   Tp_spec   Tp_err%  dir_deg   dir_rad  expected_rad
+    0    0.523   0.52262    0.0497   11.91   11.8692    0.3308   223.87   3.90722       3.90722
+    1    0.522   0.52197    0.0499   11.90   11.8692    0.2326   222.35   3.88066       3.88066
+    2    0.523   0.52242    0.0501   11.88   11.8692    0.1260   220.55   3.84928       3.84928
+    3    0.521   0.52094    0.0503   11.87   11.8692    0.0151   219.48   3.83064       3.83064
+    4    0.522   0.52184    0.0506   11.86   11.8692    0.1043   217.97   3.80430       3.80430
+    5    0.521   0.52049    0.0508   11.84   11.8692    0.2323   217.02   3.78778       3.78778
+
+  Same seed -> identical realizations: True
+  Different seed -> different realizations: True
+  Timestamps preserved: True
+  Max Hs spectral error: 0.0508%
+  Max Tp spectral error: 0.3308%
+
+  ERA5 direction convention: mwd = propagation TOWARD direction.
+  direction_rad = np.deg2rad(direction_deg)  [NO pi offset].
+  This is a LOCKED project convention.
+
+  Segment boundary limitation:
+  Each ERA5 hourly sea-state record is treated as an independent
+  stationary sea-state realization. Consequently, consecutive
+  hourly realizations are not phase-continuous.
+  Phase discontinuities exist at every hourly boundary.
+
+=== PLOTS GENERATED ===
+  A: outputs/module1_validation/A_directional_convention.png
+  B: outputs/module1_validation/B_hs_convergence.png
+  C: outputs/module1_validation/C_hs_histogram.png
+  D/E: outputs/module1_validation/DE_spectral_errors.png
+  F: outputs/module1_validation/F_spatial_propagation.png
+  G/H: outputs/module1_validation/GH_era5_comparison.png
+
+======================================================================
+SUMMARY OF KEY METRICS
+======================================================================
+Max dispersion residual |R|/omega^2:          1.84e-11
+Max directional normalization error:          0.00e+00
+Max circular mean direction error:            0.0000 deg
+Max spatial energy conservation error:        1.97e-16
+Max spectral Hs relative error:               0.0030%
+Max spectral Tp relative error (measured):    0.4075%
+Max spectral Tp error (grid-induced bound):   0.7017%
+Max analytical crest-tracking error:          0.00e+00
+Max numerical propagation-speed error:        1.17e-16
+gamma=1 -> PM max difference:                 0.00e+00
+Hs_est std at 300s  (50 seeds): 0.0272 m = 2.72%
+Hs_est std at 3600s (50 seeds): 0.0041 m = 0.41%
+Max ERA5 replay Hs spectral error:            0.0508%
+Max ERA5 replay Tp spectral error:            0.3308%
+ERA5 same-seed reproducibility:               True
+ERA5 timestamps preserved:                    True
+
+======================================================================
+VALIDATION CONCLUSIONS
+======================================================================
+
+SOFTWARE VALIDATION:
+  - All physics functions execute without error.
+  - Input validation (negative Hs/Tp/depth, invalid gamma) works.
+  - Determinism: same seed -> identical output confirmed.
+  - Array shapes, dtypes, and immutability verified.
+
+PHYSICS/NUMERICAL VALIDATION:
+  - Dispersion relation omega^2=g*k*tanh(k*d) satisfied to <1e-10 relative.
+  - Deep-water limit k->omega^2/g verified at d=200m.
+  - Shallow-water limit c->sqrt(gd), Cg->c verified at d=0.5m.
+  - JONSWAP gamma=1 equals PM exactly (not approximately).
+  - JONSWAP normalization preserves Hs to <0.1% on fine grid.
+  - Directional weights sum to 1 to machine precision.
+  - Circular mean direction matches requested direction to <0.01 deg.
+  - Spatial energy conservation: sum(a^2/2) = sum(S*df) to <1e-14.
+  - Spatial phase convention verified analytically for N/E/S/W.
+  - Numerical propagation speed matches c=omega/k to <1e-3 relative.
+  - Tp errors (0.22-0.41%) are within the frequency-grid-induced bound.
+
+EMPIRICAL/ERA5 VALIDATION:
+  - ERA5 direction convention: mwd = propagation TOWARD (no pi offset).
+  - Direction conversion: deg->rad exactly once at API boundary.
+  - Timestamps preserved through replay pipeline.
+  - Reproducibility with fixed base_seed confirmed.
+
+MODELING ASSUMPTIONS (not validated empirically):
+  - Linear wave theory (small-amplitude, no nonlinear effects).
+  - JONSWAP/PM spectral shape (not fitted to Goa measurements).
+  - cos^2 directional spreading (simplest model, s=1).
+  - Independent stationary hourly realizations (no phase continuity).
+  - Single ERA5 grid point (no spatial interpolation).
+
+REMAINING LIMITATIONS:
+  1. gamma=3.3 is the North Sea JONSWAP default, NOT calibrated for Goa.
+  2. depth_m=50m in demonstrations is NOT the real Goa deployment depth.
+  3. Each ERA5 hourly sea-state record is treated as an independent
+     stationary sea-state realization. Consequently, consecutive hourly
+     realizations are not phase-continuous.
+  4. cos^2 directional spreading not calibrated from measured directional
+     spectra.
+  5. No nonlinear wave effects (wave-wave interaction, breaking,
+     shoaling nonlinearity).
+  6. Single-point ERA5 grid cell (15.5N, 73.5E). No spatial interpolation.
+
+Hs STATISTICAL CONVERGENCE (measured, 50 seeds, Hs_target=1.0m):
+  Finite-duration random realizations exhibit statistical variation in
+  Hs estimation, and the variation decreases with duration.
+  300s:  mean=0.9884 std=0.0272m (2.72%) min=0.9437 max=1.0817
+  600s:  mean=0.9952 std=0.0189m (1.89%)
+  1800s: mean=0.9981 std=0.0061m (0.61%)
+  3600s: mean=0.9983 std=0.0041m (0.41%) min=0.9885 max=1.0058
+  These are measured values from this run, not universal rules.
+
+SCIENTIFIC CONCLUSION:
+  Module 1 is numerically and internally physically validated within
+  the stated assumptions of linear wave theory, discretized JONSWAP/PM
+  spectra, finite-depth linear dispersion, cos^2 directional spreading,
+  and independent stationary ERA5-conditioned hourly realizations.
+
+  The following have NOT been validated empirically:
+  - Goa-specific JONSWAP gamma (currently using North Sea default 3.3)
+  - Actual deployment bathymetry (depth_m is a required explicit input)
+  - Nonlinear wave effects
+  - Spatially varying sea state
+  - Continuous nonstationary wave evolution across hourly boundaries
+  - Directional spreading calibration from measured directional spectra

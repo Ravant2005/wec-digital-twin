@@ -1,0 +1,41 @@
+=================================================================
+Module 2.3B — Wave Excitation Force Summary
+=================================================================
+
+IMPORTANT: TEMPORARY DEVELOPMENT BUOY — not the Goa deployment buoy.
+
+1. Physics
+   F_j(t) = a_j * |F_exc(omega_j)| * cos(omega_j*t + phi_j + angle(F_exc))
+   F_exc(t) = sum_j F_j(t)   [linear superposition]
+   Units: a_j [m], |F_exc| [N/m], F_j(t) [N]
+
+2. BEM input (Module 2.2, FROZEN)
+   Capytaine version : 3.0.0
+   Mesh resolution   : (6, 24, 16) = 672 panels
+   Frequency range   : 0.20–1.40 rad/s (20 points)
+
+3. Interpolation method
+   Linear interpolation of Re(F_exc) and Im(F_exc) separately.
+   Amplitude and phase derived from interpolated complex value.
+   No extrapolation: ValueError raised outside [0.2, 1.4] rad/s.
+
+4. Frequency-response validation (all 20 BEM grid points, a=1 m)
+   Max relative error  = 0.1979%
+   Mean relative error = 0.1056%
+   (Limited by DFT spectral leakage over 400 s window)
+
+5. Module 1 integration
+   Components: 12
+   omega range: [0.250, 1.200] rad/s
+   Force RMS: 187.792 kN
+   All finite: True
+
+6. Numerical limitations
+   - Frequency range limited to [0.2, 1.4] rad/s (Module 2.2 grid).
+   - Linear interpolation between 20 BEM points; error is negligible
+     for smooth F_exc(omega) but increases near omega_max where the
+     irregular-frequency artifact causes rapid variation.
+   - Wave direction fixed at 0 deg (head-on); directional spreading
+     not yet implemented.
+   - No buoy motion, radiation, or PTO included.
+=================================================================

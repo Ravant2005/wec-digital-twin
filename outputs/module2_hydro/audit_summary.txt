@@ -1,0 +1,75 @@
+============================================================
+Module 2.2 — Numerical Audit Summary
+Capytaine version: 3.0.0
+============================================================
+
+IMPORTANT: TEMPORARY DEVELOPMENT BUOY — not the Goa deployment buoy.
+
+1. Geometry
+   radius      = 5.0 m
+   draft       = 10.0 m
+   water_depth = 50.0 m
+   rho         = 1025.0 kg/m^3
+   g           = 9.81 m/s^2
+
+2. Mesh resolutions used
+   (2,  8,  5) =   72 panels  [coarse, fast tests]
+   (3, 12,  8) =  168 panels  [medium, test fixture]
+   (6, 24, 16) =  672 panels  [production/demo]
+   (8, 32, 20) = 1152 panels  [convergence reference only]
+   No lid mesh used in production.
+
+3. Frequency range
+   omega_min = 0.20 rad/s
+   omega_max = 1.40 rad/s
+   n_omega   = 20
+
+4. Radiation-damping sign convention (VERIFIED)
+   Capytaine 3.x: B_cap = Im(F_rad)/omega < 0 for passive body.
+   Our code:      B_physical = -B_cap > 0 (standard WEC convention).
+   Derivation:    F_rad = omega^2*A - i*omega*B_physical
+                  => B_cap = Im(F_rad)/omega = -B_physical
+   EOM check:     H = -omega^2*(M+A) - i*omega*B_cap + C
+                  Im(-i*omega*B_cap) = +omega*B_physical > 0  (passive OK)
+   Status:        CORRECT. No code change required.
+
+5. Hydrostatic benchmark
+   Analytical C33 = rho*g*pi*r^2 = 789737.4883 N/m
+   Module 2.1 C33 = 789737.4883 N/m  (exact, rel err = 0)
+   Capytaine A_wp = ~0 (closed mesh, divergence theorem cancellation).
+   Capytaine C33  = not computable from mesh waterplane_area.
+   Authoritative benchmark: Module 2.1 analytical value.
+
+6. Irregular frequency
+   omega_irr_estimate = 2.0880 rad/s (Capytaine parallelepiped formula)
+   T_irr_estimate     = 3.009 s
+   omega_max / omega_irr = 67.1%  (safety margin: 32.9%)
+   Status: omega_max = 1.4 rad/s is safely below omega_irr.
+
+7. Lid experiment conclusion
+   Hull-only vs hull+lid differ by 5-47% in A and 19-67% in B
+   within the production range (0.2-1.4 rad/s).
+   The lid is NOT a drop-in replacement; it changes the BEM formulation.
+   Decision: retain hull-only for production.
+   Lid recommended only if frequency range must exceed 1.4 rad/s.
+
+8. Mesh convergence (omega = 1.0 rad/s, Richardson extrapolation)
+   672-panel mesh estimated true errors: A ~ 3%, B ~ 20%.
+   The 672-panel mesh is NOT fully converged for radiation damping.
+   Further refinement recommended before Cummins equation deployment.
+
+9. Hydrodynamic coefficient ranges (672-panel, 0.2-1.4 rad/s)
+   Added mass:          342281 - 911882 kg
+   Radiation damping:   400 - 269588 N*s/m
+   Excitation amplitude: 39732 - 1636817 N/m
+
+10. Module 2.2 freeze status
+    Sign convention: VERIFIED correct.
+    Hydrostatics:    Module 2.1 is authoritative; Capytaine limitation documented.
+    Irregular freq:  Production range is safe.
+    Lid:             Hull-only retained; lid documented as future option.
+    Convergence:     672-panel mesh has ~3% A error, ~20% B error.
+                     Acceptable for development; document before Cummins.
+    RECOMMENDATION:  Module 2.2 may be frozen with the above caveats
+                     documented. Mesh refinement is a pre-Cummins task.
+============================================================

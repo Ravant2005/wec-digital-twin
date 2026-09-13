@@ -1,0 +1,80 @@
+======================================================================
+MODULE 2.5 — DETERMINISTIC LATCHING CONTROL BASELINE
+ORACLE/REFERENCE LATCHING BASELINE — uses true excitation signal
+======================================================================
+
+CONTROLLER: Phase-based latching (downward F_exc zero-crossing trigger)
+Default latch duration: 1.0 s
+PTO damping: 40000 N·s/m
+Simulation duration: 300.0 s, dt=0.05 s
+
+----------------------------------------------------------------------
+REGULAR-WAVE VALIDATION
+----------------------------------------------------------------------
+   omega       case   x_amp[m]   v_amp[m/s]    P_mean[W]    E_cum[kJ]
+     0.6     No PTO     0.9239       0.5582          0.0         0.00
+     0.6  Fixed PTO     0.8897       0.5341       5627.3      1836.89
+     0.6   Latching     1.4095       1.0670      15918.2      4700.84
+
+     0.8     No PTO    11.1036       8.8914          0.0         0.00
+     0.8  Fixed PTO     6.7886       5.4308     585929.3    156926.48
+     0.8   Latching     4.4915       3.9065     278705.2     76978.14
+
+     1.0     No PTO     1.8863       1.8682          0.0         0.00
+     1.0  Fixed PTO     1.7700       1.7682      62094.3     19106.49
+     1.0   Latching     1.3949       1.5910      44434.0     13225.13
+
+----------------------------------------------------------------------
+FIXED PTO vs LATCHING COMPARISON (omega=0.8 rad/s, steady-state half)
+----------------------------------------------------------------------
+  Fixed PTO mean power:   585929.3 W
+  Latching mean power:    278705.2 W
+  Improvement:            -52.4%
+
+----------------------------------------------------------------------
+LATCH-DURATION SWEEP (omega=0.8 rad/s)
+----------------------------------------------------------------------
+ Duration[s]    P_mean[W]  vs_fixed[%]   x_amp[m]
+        0.00     585929.3         +0.0     6.7886
+        0.25     712560.6        +21.6     7.3850
+        0.50     604789.3         +3.2     6.7649
+        0.75     430834.1        -26.5     5.6552
+        1.00     278705.2        -52.4     4.4915
+        1.50     107206.3        -81.7     2.6995
+        2.00      40629.0        -93.1     1.6013
+
+----------------------------------------------------------------------
+PHASE SENSITIVITY (omega=0.8 rad/s, latch_duration=1.0 s)
+----------------------------------------------------------------------
+  Phase[deg]   P_fixed[W]   P_latch[W]   improvement[%]
+           0     585929.3     278705.2            -52.4
+          30     585610.1     277420.1            -52.6
+          60     588034.6     275673.8            -53.1
+          90     590778.4     275551.0            -53.4
+         120     591097.5     276957.2            -53.1
+         150     588673.0     278652.0            -52.7
+         180     585929.3     278705.9            -52.4
+
+----------------------------------------------------------------------
+ENERGY ACCOUNTING (omega=0.8 rad/s, latching)
+----------------------------------------------------------------------
+  Total excitation work:   223891.57 kJ
+  Radiation memory work:   -81139.90 kJ
+  PTO extracted energy:     76978.14 kJ
+  Latch reaction work:        0.0000 J  (should be ~0)
+  Final mechanical energy:6552717.41 J
+  Latch fraction:         12.7%
+  Latch events:           38
+
+----------------------------------------------------------------------
+LIMITATIONS
+----------------------------------------------------------------------
+  1. ORACLE controller — uses true future excitation (not deployable).
+  2. Ideal kinematic latch — no mechanical latch model.
+  3. Trigger rule is heuristic (downward F_exc zero-crossing).
+  4. Euler-Cromer integration; accuracy limited by dt=0.05 s.
+  5. Single-DOF heave only; surge/pitch coupling ignored.
+
+======================================================================
+MODULE 2.5 STATUS: READY TO FREEZE
+======================================================================

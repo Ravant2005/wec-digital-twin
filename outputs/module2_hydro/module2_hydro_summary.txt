@@ -1,0 +1,47 @@
+============================================================
+Module 2.2 — Capytaine BEM Summary Report
+============================================================
+
+IMPORTANT: This uses a TEMPORARY DEVELOPMENT BUOY.
+           It is NOT the final Goa deployment geometry.
+
+Capytaine version        : 3.0.0
+Mesh resolution          : (6, 24, 16)
+Number of panels         : 672
+Frequency range          : 0.20–1.40 rad/s
+Number of frequencies    : 20
+Water depth              : 50.0 m
+Water density (rho)      : 1025.0 kg/m³
+Cylinder radius          : 5.0 m
+Cylinder draft           : 10.0 m
+
+Hydrodynamic coefficient ranges:
+  Added mass             : 342281 – 911881 kg
+  Radiation damping      : 400 – 269587 N·s/m
+  Excitation amplitude   : 39732 – 1636816 N/m
+
+Mesh convergence at ω = 1.0 rad/s:
+    Panels        A [kg]     B [N·s/m]    ΔA [%]    ΔB [%]
+        72        403638        111349       8.6      53.5
+       168        426271         89944       3.5      24.0
+       672        441660         72556       0.0       0.0
+
+Sign convention note:
+  Capytaine 3.x uses H = -ω²(M+A) - iωB + C.
+  B_physical = -B_capytaine > 0 (standard WEC literature convention).
+  This module stores B_physical (positive for energy dissipation).
+
+Irregular frequency note:
+  First irregular frequency ≈ 2.09 rad/s for this mesh.
+  Frequency range capped at 1.4 rad/s (67% of ω_irr) for safety.
+  Results near ω_irr are unreliable without a lid mesh.
+
+Scientific caveats:
+  1. Mesh convergence is slow for this large cylinder (r=5m).
+     The 672-panel mesh shows ~2% error in A and ~11% in B vs 1152 panels.
+     Further refinement is recommended for production use.
+  2. Added mass increases sharply near ω=1.4 rad/s, approaching the
+     irregular frequency. This is a mesh artifact, not a physical resonance.
+  3. These coefficients are for the TEMPORARY reference buoy only.
+     Goa deployment buoy geometry and Capytaine runs are future work.
+============================================================

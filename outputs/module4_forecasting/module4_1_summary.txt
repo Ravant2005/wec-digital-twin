@@ -1,0 +1,98 @@
+======================================================================
+MODULE 4.1 — WAVE FORECASTING DATASET + BASELINES
+======================================================================
+
+DATA SOURCE
+  ERA5 Goa, January 2024, hourly, 744 samples
+  Sensor: Module 3 synthetic camera (development assumptions)
+  Sensor noise: Hs=0.15m, Tp=0.8s, dir=15.0deg
+  Sensor delay: 1 step, missing prob: 0.05
+
+FORECAST CONFIGURATION
+  input_length     : 24 hours
+  forecast_horizon : 6 hours
+  train_fraction   : 0.7
+  val_fraction     : 0.15
+  test_fraction    : 0.15
+  missing_policy   : mask_only
+
+CHRONOLOGICAL SPLIT
+  Total samples    : 744
+  Train end index  : 520  (2024-01-01 00:00:00 – 2024-01-22 15:00:00)
+  Val end index    : 632  (2024-01-22 16:00:00 – 2024-01-27 07:00:00)
+  Test end index   : 744  (2024-01-27 08:00:00 – 2024-01-31 23:00:00)
+  Train samples    : 520
+  Val samples      : 112
+  Test samples     : 112
+
+SLIDING WINDOWS
+  Train windows    : 491
+  Val windows      : 83
+  Test windows     : 83
+  Total windows    : 657
+  Features (N_FEATURES) : 7  ['Hs', 'Tp', 'sin_direction', 'cos_direction', 'Hs_valid', 'Tp_valid', 'direction_valid']
+  Targets  (N_TARGETS)  : 4   ['Hs', 'Tp', 'sin_direction', 'cos_direction']
+  X shape per sample    : (24, 7)
+  Target shape per sample: (6, 4)
+
+DATASET SIZE WARNING
+  744 hourly samples is INSUFFICIENT for production deep learning.
+  Any neural network trained on this dataset is proof-of-concept only.
+  Do not interpret results as production-quality forecasts.
+
+SCALER STATISTICS (training data only)
+  Hs  mean=0.7543 m,  std=0.2037 m
+  Tp  mean=10.3586 s,  std=3.7216 s
+  sin/cos direction: NOT standardized (already in [-1,1])
+  Validity masks:    NOT standardized (binary)
+
+BASELINE METRICS — TEST SET
+  Persistence:
+    Hs  MAE=0.1223m  RMSE=0.1543m  bias=-0.0510m
+    Tp  MAE=1.9479s  RMSE=3.4048s  bias=-0.0000s
+    Dir MAE=18.81deg  RMSE=24.17deg
+  Climatology:
+    Hs  MAE=0.1104m  RMSE=0.1359m  bias=+0.0325m
+    Tp  MAE=3.1663s  RMSE=3.9262s  bias=+1.2347s
+    Dir MAE=29.03deg  RMSE=34.38deg
+
+SKILL SCORE (climatology vs persistence, test set)
+  Hs skill  = +0.119  (positive = climatology better than persistence)
+  Tp skill  = -0.153
+
+HORIZON-DEPENDENT METRICS — TEST SET (Persistence)
+    h    Hs_MAE   Hs_RMSE    Tp_MAE   Tp_RMSE   Dir_MAE
+    1    0.1187    0.1484    1.2708    2.3864     13.28
+    2    0.1199    0.1506    1.5495    2.8502     15.58
+    3    0.1217    0.1533    1.8548    3.3209     17.94
+    4    0.1230    0.1556    2.1539    3.7230     20.12
+    5    0.1245    0.1577    2.3343    3.8489     22.13
+    6    0.1258    0.1600    2.5238    4.0042     23.82
+
+LEAKAGE TESTS
+  A. Future truth in X              : PASS (X uses obs only)
+  B. Future obs in X                : PASS (window ends at origin)
+  C. Immutable after build          : PASS (samples are copies)
+  D. Test data affects train_medians: PASS (medians from train only)
+  E. Climatology uses train only    : PASS
+  F. Split is deterministic         : PASS
+  G. No window crosses boundary     : PASS
+  H. Persistence reads no future    : PASS
+  I. Imputation uses no future info : PASS
+
+MISSING DATA HANDLING
+  Policy: mask_only (NaN retained, validity mask available)
+  No forward-fill or imputation in dataset builder.
+  train_median policy available for downstream models.
+
+LIMITATIONS
+  1. Only 744 hourly samples — insufficient for deep learning.
+  2. Sensor noise parameters are development assumptions.
+  3. No neural network implemented in this module.
+  4. ERA5 is reanalysis, not real-time observations.
+  5. Single spatial point — no spatial wave field information.
+  6. Persistence and climatology are non-ML baselines only.
+
+======================================================================
+MODULE 4.1 STATUS: READY TO FREEZE
+======================================================================

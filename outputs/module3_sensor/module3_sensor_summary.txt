@@ -1,0 +1,77 @@
+======================================================================
+MODULE 3 — SYNTHETIC WAVE SENSOR / CAMERA OBSERVATION MODEL
+======================================================================
+
+SENSOR MODEL
+  Additive Gaussian noise + bias + circular direction wrapping.
+  Represents the OUTPUT of a hypothetical camera-based wave
+  estimation system.  No computer vision is implemented.
+
+SENSOR PARAMETERS (development assumptions — NOT calibrated)
+  sampling_interval    : 3600 s (hourly ERA5)
+  hs_noise_std         : 0.15 m
+  tp_noise_std         : 0.8 s
+  direction_noise_std  : 15.0 deg
+  hs_bias              : 0.0 m
+  tp_bias              : 0.0 s
+  direction_bias       : 0.0 deg
+  delay_steps          : 1
+  missing_probability  : 0.05
+  random_seed          : 42
+
+ERA5 GOA DATASET STATISTICS
+  N timesteps          : 744
+  Hs range             : 0.50 – 1.34 m
+  Tp range             : 3.62 – 17.75 s
+  Direction range      : 194.8 – 333.3 deg
+
+OBSERVATION STATISTICS (valid observations only)
+  Hs MAE               : 0.1194 m
+  Hs RMSE              : 0.1495 m
+  Tp MAE               : 0.7806 s
+  Tp RMSE              : 1.3152 s
+  Direction MAE        : 12.0242 deg
+  Direction RMSE       : 15.2449 deg
+  Missing fraction     : 5.1%
+  Hs clipped (to 0)    : 0
+  Tp clipped (to >0)   : 0
+
+LEAKAGE TESTS
+  A. Future truth in observation history : PASS (delay enforced)
+  B. as_model_input() excludes truth keys: PASS
+  C. Mutating future truth after observe : PASS (arrays copied)
+  D. Delay never uses future index       : PASS
+  E. Missing values remain NaN           : PASS
+
+DELAY TESTS
+  delay_steps=1: obs[n] uses truth[n-1]
+  Indices 0..0 marked unavailable (NaN, valid=False)
+
+REPRODUCIBILITY
+  Same seed → identical: True
+  Different seed → different: True
+
+PLOTS GENERATED
+  outputs/module3_sensor/S1_hs_true_vs_obs.png
+  outputs/module3_sensor/S2_tp_true_vs_obs.png
+  outputs/module3_sensor/S3_direction_true_vs_obs.png
+  outputs/module3_sensor/S4_hs_error.png
+  outputs/module3_sensor/S5_tp_error.png
+  outputs/module3_sensor/S6_direction_error.png
+  outputs/module3_sensor/S7_missing_mask.png
+  outputs/module3_sensor/S8_delay_illustration.png
+  outputs/module3_sensor/S9_error_distributions.png
+
+SCIENTIFIC LIMITATIONS
+  1. Synthetic sensor only — noise parameters are development assumptions.
+  2. No actual camera image processing is implemented.
+  3. No wave segmentation or tracking is implemented.
+  4. No environmental occlusion model (sea-spray, glare, rain, fog).
+  5. No spatial camera geometry is modelled.
+  6. No uncertainty calibration against real buoy-camera data.
+  7. Noise is i.i.d. Gaussian; real camera errors are correlated.
+  8. No high-frequency synthetic observations (ERA5 is hourly).
+
+======================================================================
+MODULE 3 STATUS: READY TO FREEZE
+======================================================================
