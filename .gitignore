@@ -1,66 +1,110 @@
-# Byte-compiled / optimized / DLL files
+# ===========================================================================
+# WEC Digital Twin - .gitignore
+# ===========================================================================
+# Tracked on purpose (do NOT ignore):
+#   module*/   source packages
+#   tests/     test suite
+#   scripts/   data acquisition / audit scripts
+#   docs/      design notes
+#   data/      ERA5 model inputs (.nc + .json)
+#   outputs/   generated figures + validation reports (kept for reference)
+#
+# Everything below is generated, machine-specific, or otherwise not source.
+# ===========================================================================
+
+# --- Python -----------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
+.Python
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
-parts/
 sdist/
-var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# Unit test / coverage reports
-htmlcov/
+# --- Virtual environments ---------------------------------------------------
+.env
+.env.*
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# --- Testing / coverage -----------------------------------------------------
+.pytest_cache/
+.cache/
 .tox/
 .nox/
 .coverage
 .coverage.*
-.cache
-nosetests.xml
 coverage.xml
 *.cover
-*.py,cover
+htmlcov/
 .hypothesis/
-.pytest_cache/
-cover/
+nosetests.xml
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# --- Type checkers / linters / formatters -----------------------------------
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+.ruff_cache/
+.pyright/
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# --- Jupyter ----------------------------------------------------------------
+.ipynb_checkpoints/
 
-# IDEs and OS
-.idea/
-.vscode/
-.DS_Store
-
-# Large result files and models
+# --- Experiment artifacts (large / regenerated) -----------------------------
 results/
 *.pt
-*.csv.gz
+*.pth
 *.zip
 *.pkl
 *.npz
+*.npy
+*.joblib
+*.csv.gz
+*.log
+*.h5
+*.hdf5
+
+# --- OS / editor junk -------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- AI coding assistants ---------------------------------------------------
+.kilo/
+.claude/
+.cursor/
+.aider*
+.continue/
+
+# --- Secrets ----------------------------------------------------------------
+*.pem
+*.key
+.secrets/
+credentials.json
+token.json
