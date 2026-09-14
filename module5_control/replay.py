@@ -360,22 +360,13 @@ def build_episode_replay(
         wave_components_list.append(wc)
 
         # Also fill the legacy eta buffer (used by excitation_force field and
-        # Module 5.1 tests; Module 5.2A environment uses IrregularExcitationModel)
-        seastate: SeaStateResult = goa_seastate(
-            Hs=Hs_i,
-            Tp=Tp_i,
-            direction_deg=dir_i,
-            depth_m=depth_m,
-            gamma=gamma,
-            duration_s=DT_ERA5,
-            dt=dt_physics,
-            seed=hour_seed,
-        )
-        n_actual = len(seastate.eta)
-        n_use    = min(n_actual, n_phys_per_hour)
-        exc_buffer[i, :n_use] = seastate.eta[:n_use]
-        if n_use < n_phys_per_hour:
-            exc_buffer[i, n_use:] = exc_buffer[i, n_use - 1]
+        # Module 5.1 tests; Module 5.2A environment uses IrregularExcitationModel).
+        # We use the fast 1D approach via the collapsed Z array (mathematically identical
+        # to goa_seastate at the origin) to prevent O(N_dir * N_freq * N_t) initialisation hangs.
+        t_array = np.arange(n_phys_per_hour) * dt_physics
+        phase = wc.omega[np.newaxis, :] * t_array[:, np.newaxis]
+        eta_fast = np.dot(np.cos(phase), np.real(wc.Z)) - np.dot(np.sin(phase), np.imag(wc.Z))
+        exc_buffer[i, :] = eta_fast
 
     return EpisodeReplay(
         n_hours=n_hours,
